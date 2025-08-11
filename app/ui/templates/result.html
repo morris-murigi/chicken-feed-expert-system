@@ -1,0 +1,58 @@
+<!-- app/ui/templates/result.html -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Recommendation</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Feed Recommendation</h1>
+
+      <h3>Facts</h3>
+      <pre>{{ result.facts }}</pre>
+
+      <h3>Matched Rules</h3>
+      {% if result.rules_matched %}
+        <ul>
+        {% for r in result.rules_matched %}
+          <li>{{ r }}</li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p>No rules matched.</p>
+      {% endif %}
+
+      <h3>Recommendation</h3>
+      {% if result.recommendation.feed %}
+        <p><strong>Feed:</strong> {{ result.recommendation.feed }}</p>
+      {% endif %}
+      {% if result.recommendation.dcp %}
+        <p><strong>Target DCP:</strong> {{ result.recommendation.dcp }}</p>
+      {% endif %}
+      {% if result.recommendation.warnings %}
+        <p><strong>Warnings:</strong></p>
+        <ul>
+        {% for w in result.recommendation.warnings %}
+          <li style="color:darkred">{{ w }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+
+      <h3>Suggested Recipe</h3>
+      {% if result.recipe %}
+        <p><strong>{{ result.recipe.name }}</strong> (Target DCP: {{ result.recipe.target_dcp }})</p>
+        <ul>
+        {% for ing, qty in result.recipe.ingredients.items() %}
+          <li>{{ ing }}: {{ qty }} kg</li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p>No recipe available for this chicken type.</p>
+      {% endif %}
+
+      <a href="/">← Back</a>
+    </div>
+  </body>
+</html>

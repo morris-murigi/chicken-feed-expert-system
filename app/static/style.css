@@ -1,0 +1,8 @@
+/* app/static/style.css */
+body { font-family: Arial, sans-serif; background: #f5f7fb; color: #222; }
+.container { max-width: 760px; margin: 30px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+h1 { color: #1b4332; }
+label { display:block; margin-top: 12px; font-weight:600; }
+input, select { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ddd; }
+button { margin-top:14px; background:#2d6a4f; color:white; padding:10px 14px; border:none; border-radius:6px; cursor:pointer; }
+pre { background:#f0f2f5; padding:10px; border-radius:6px; }
