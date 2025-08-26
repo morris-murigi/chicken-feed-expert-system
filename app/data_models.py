@@ -1,8 +1,9 @@
-# app/data_models.py
 from pydantic import BaseModel
 from typing import Optional
 
-class RecommendRequest(BaseModel):
-    type: str                 # Chicken type: Chick/Pullet/Layer/Broiler/Kienyeji
-    age_weeks: int            # Age in weeks
-    include_recipes: Optional[bool] = True
+class FeedQuery(BaseModel):
+    Type: str
+    Age_Weeks: float
+    EggProduction: Optional[str] = None
+    FeedCost: Optional[str] = None
+    Health: Optional[str] = None
