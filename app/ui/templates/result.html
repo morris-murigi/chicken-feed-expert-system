@@ -1,58 +1,75 @@
-<!-- app/ui/templates/result.html -->
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <title>Recommendation</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feed Recommendation - Chicken Feed Expert System</title>
+    <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body>
-    <div class="container">
-      <h1>Feed Recommendation</h1>
+  <body class="bg-gray-100 min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+      <header class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Feed Recommendation</h1>
+        <p class="text-gray-600 mt-2">Tailored feed suggestions for your poultry</p>
+      </header>
+      <main class="bg-white shadow-lg rounded-lg p-6 space-y-6">
+        <section>
+          <h2 class="text-xl font-semibold text-gray-700">Facts</h2>
+          <pre class="bg-gray-50 p-4 rounded-md text-sm text-gray-800 overflow-auto">{{ result.facts }}</pre>
+        </section>
 
-      <h3>Facts</h3>
-      <pre>{{ result.facts }}</pre>
+        <section>
+          <h2 class="text-xl font-semibold text-gray-700">Matched Rules</h2>
+          {% if result.rules_matched %}
+            <ul class="list-disc pl-5 space-y-2 text-gray-600">
+              {% for r in result.rules_matched %}
+                <li>{{ r }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-gray-500 italic">No rules matched.</p>
+          {% endif %}
+        </section>
 
-      <h3>Matched Rules</h3>
-      {% if result.rules_matched %}
-        <ul>
-        {% for r in result.rules_matched %}
-          <li>{{ r }}</li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        <p>No rules matched.</p>
-      {% endif %}
+        <section>
+          <h2 class="text-xl font-semibold text-gray-700">Recommendation</h2>
+          <div class="space-y-2">
+            {% if result.recommendation.feed %}
+              <p><strong class="text-gray-800">Feed:</strong> {{ result.recommendation.feed }}</p>
+            {% endif %}
+            {% if result.recommendation.dcp %}
+              <p><strong class="text-gray-800">Target DCP:</strong> {{ result.recommendation.dcp }}</p>
+            {% endif %}
+            {% if result.recommendation.warnings %}
+              <p><strong class="text-gray-800">Warnings:</strong></p>
+              <ul class="list-disc pl-5 space-y-2 text-red-600">
+                {% for w in result.recommendation.warnings %}
+                  <li>{{ w }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </section>
 
-      <h3>Recommendation</h3>
-      {% if result.recommendation.feed %}
-        <p><strong>Feed:</strong> {{ result.recommendation.feed }}</p>
-      {% endif %}
-      {% if result.recommendation.dcp %}
-        <p><strong>Target DCP:</strong> {{ result.recommendation.dcp }}</p>
-      {% endif %}
-      {% if result.recommendation.warnings %}
-        <p><strong>Warnings:</strong></p>
-        <ul>
-        {% for w in result.recommendation.warnings %}
-          <li style="color:darkred">{{ w }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
+        <section>
+          <h2 class="text-xl font-semibold text-gray-700">Suggested Recipe</h2>
+          {% if result.recipe %}
+            <p class="text-gray-800"><strong>{{ result.recipe.name }}</strong> (Target DCP: {{ result.recipe.target_dcp }})</p>
+            <ul class="list-disc pl-5 space-y-2 text-gray-600">
+              {% for ing, qty in result.recipe.ingredients.items() %}
+                <li>{{ ing }}: {{ qty }} kg</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-gray-500 italic">No recipe available for this chicken type.</p>
+          {% endif %}
+        </section>
 
-      <h3>Suggested Recipe</h3>
-      {% if result.recipe %}
-        <p><strong>{{ result.recipe.name }}</strong> (Target DCP: {{ result.recipe.target_dcp }})</p>
-        <ul>
-        {% for ing, qty in result.recipe.ingredients.items() %}
-          <li>{{ ing }}: {{ qty }} kg</li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        <p>No recipe available for this chicken type.</p>
-      {% endif %}
-
-      <a href="/">← Back</a>
+        <a href="/" class="inline-block mt-4 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">? Back to Home</a>
+      </main>
     </div>
+    <footer class="mt-auto text-center py-4 text-gray-500 text-sm">
+      <p>&copy; 2025 Chicken Feed Expert System. All rights reserved.</p>
+    </footer>
   </body>
 </html>

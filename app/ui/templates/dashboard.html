@@ -1,27 +1,37 @@
-<!-- app/ui/templates/dashboard.html -->
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta charset="utf-8"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chicken Feed Expert System</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body>
-    <div class="container">
-      <h1>🐓 Chicken Feed Expert System (MVP)</h1>
-      <form action="/recommend" method="post">
-        <label for="type">Chicken Type</label>
-        <select id="type" name="type" required>
-          {% for ct in chicken_types %}
-          <option value="{{ ct }}">{{ ct }}</option>
-          {% endfor %}
-        </select>
-
-        <label for="age_weeks">Age (weeks)</label>
-        <input type="number" id="age_weeks" name="age_weeks" min="0" required>
-
-        <button type="submit">Get Recommendation</button>
-      </form>
+  <body class="bg-gray-100 min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+      <header class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">?? Chicken Feed Expert System</h1>
+        <p class="text-gray-600 mt-2">Optimize your poultry feed with tailored recommendations</p>
+      </header>
+      <main class="bg-white shadow-lg rounded-lg p-6">
+        <form action="/recommend" method="post" class="space-y-6">
+          <div>
+            <label for="type" class="block text-sm font-medium text-gray-700">Chicken Type</label>
+            <select id="type" name="type" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+              {% for ct in chicken_types %}
+              <option value="{{ ct }}">{{ ct }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="age_weeks" class="block text-sm font-medium text-gray-700">Age (weeks)</label>
+            <input type="number" id="age_weeks" name="age_weeks" min="0" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Get Recommendation</button>
+        </form>
+      </main>
     </div>
+    <footer class="mt-auto text-center py-4 text-gray-500 text-sm">
+      <p>&copy; 2025 Chicken Feed Expert System. All rights reserved.</p>
+    </footer>
   </body>
 </html>
