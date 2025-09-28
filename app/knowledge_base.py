@@ -268,3 +268,32 @@ RULES = [
             "Advice":"Use softer feed to help sick broilers recover."}
 }
     ]
+
+
+#Fuzzy sets 
+# Fuzzy sets for age, protein, and cost
+FUZZY_SETS = {
+    "Age": {
+        "Chick": (0, 0, 8),        # triangular membership (low=0, peak=0, high=8)
+        "Grower": (7, 12, 20),
+        "Layer": (18, 30, 76)
+    },
+    "Protein": {
+        "Low": (10, 14, 18),
+        "High": (18, 22, 25)
+    },
+    "Cost": {
+        "Cheap": (15, 20, 25),
+        "Expensive": (30, 40, 50)
+    },
+    "Broiler_Age": {
+        "Starter": (0, 0, 1.5),     # 0–1.5 weeks
+        "Grower": (1.5, 3, 4),      # 1.5–4 weeks
+        "Finisher": (4, 6, 7)       # 4–7 weeks
+    },
+    "Broiler_Protein": {
+        "Low": (18, 20, 21),        # Below recommended
+        "Medium": (21, 22, 23),     # Around recommended
+        "High": (23, 24, 25)        # Above recommended
+    }
+}
