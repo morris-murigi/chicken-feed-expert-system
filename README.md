@@ -11,8 +11,11 @@ Frontend (Streamlit) – simple UI for interaction
 git clone https://github.com/morris-murigi/chicken-feed-expert-system.git
 cd chicken-feed-expert-system
 ```
+
 2. Install dependencies
 ```bash
+.venv\Scripts\activate.bat
+
 pip install -r requirements.txt
 ```
 
