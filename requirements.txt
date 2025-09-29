@@ -3,3 +3,7 @@ uvicorn
 pydantic
 streamlit
 requests
+mcp
+fastmcp
+python-dotenv
+anthropic
