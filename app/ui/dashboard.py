@@ -1,5 +1,8 @@
 import streamlit as st
 import requests
+import sys, os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 API_URL = "http://localhost:8000/recommend"  # Update when deploying
 
