@@ -30,6 +30,14 @@ with st.sidebar:
     st.markdown("### About")
     st.markdown("Optimize poultry nutrition with tailored feed recommendations based on chicken type, age, and conditions.")
     st.markdown("---")
+    st.markdown("### Chicken Types & Age Guide")
+    st.markdown("**Chick**: 0-8 weeks")
+    st.markdown("**Pullets / Growers**: 8-18 weeks")
+    st.markdown("**Layer**: 18+ weeks")
+    st.markdown("**Broiler Starter**: 0-4 weeks")
+    st.markdown("**Broiler Grower**: 4-7 weeks")
+    st.markdown("**Broiler Finisher**: 7+ weeks")
+    st.markdown("---")
     st.markdown("© 2025 Chicken Feed Expert System")
 
 st.title("🐓 Chicken Feed Expert System")
@@ -44,7 +52,7 @@ with st.form("feed_form", clear_on_submit=False):
         chicken_type = st.selectbox(
             "Chicken Type", 
             ["Chick", "Pullets / Growers", "Layer", "Broiler Starter", "Broiler Grower", "Broiler Finisher"],
-            help="Select the type of chicken"
+            help="Select the type of chicken based on age guide in sidebar"
         )
         age_weeks = st.number_input(
             "Age (weeks)", 
@@ -105,9 +113,22 @@ if submitted:
             st.markdown(f"**Recipe Name:** {data['recipe'].get('name', 'N/A')}")
             st.markdown(f"**Target DCP:** {data['recipe'].get('target_dcp', 'N/A')}")
             if data["recipe"].get("ingredients"):
-                st.markdown("**Ingredients:**")
+                st.markdown("**Ingredients (kg per 70kg bag):**")
                 for ingredient, qty in data["recipe"]["ingredients"].items():
                     st.markdown(f"- {ingredient}: {qty} kg")
+            if data["recipe"].get("adjustments"):
+                st.subheader("Adjustments Based on Input:")
+                for condition, adjustment in data["recipe"]["adjustments"].items():
+                    if condition in [f"{k} {v}" for k, v in {
+                        "Low Egg Production": data["facts"].get("EggProduction", "N/A"),
+                        "Moderate Egg Production": data["facts"].get("EggProduction", "N/A"),
+                        "High Egg Production": data["facts"].get("EggProduction", "N/A"),
+                        "Healthy": data["facts"].get("Health", "N/A"),
+                        "Sick": data["facts"].get("Health", "N/A"),
+                        "High Cost": data["facts"].get("FeedCost", "N/A"),
+                        "Low Cost": data["facts"].get("FeedCost", "N/A")
+                    } if v]:
+                        st.markdown(f"- {adjustment}")
         else:
             st.info("No recipe available for this chicken type.")
     except Exception as e:
