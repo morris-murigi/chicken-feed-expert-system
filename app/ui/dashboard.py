@@ -118,17 +118,22 @@ if submitted:
                     st.markdown(f"- {ingredient}: {qty} kg")
             if data["recipe"].get("adjustments"):
                 st.subheader("Adjustments Based on Input:")
+                facts = data["facts"]
+                egg_prod = facts.get("EggProduction", "N/A")
+                health = facts.get("Health", "N/A")
+                cost = facts.get("FeedCost", "N/A")
                 for condition, adjustment in data["recipe"]["adjustments"].items():
-                    if condition in [f"{k} {v}" for k, v in {
-                        "Low Egg Production": data["facts"].get("EggProduction", "N/A"),
-                        "Moderate Egg Production": data["facts"].get("EggProduction", "N/A"),
-                        "High Egg Production": data["facts"].get("EggProduction", "N/A"),
-                        "Healthy": data["facts"].get("Health", "N/A"),
-                        "Sick": data["facts"].get("Health", "N/A"),
-                        "High Cost": data["facts"].get("FeedCost", "N/A"),
-                        "Low Cost": data["facts"].get("FeedCost", "N/A")
-                    } if v]:
-                        st.markdown(f"- {adjustment}")
+                    if "Egg Production" in condition and egg_prod != "N/A":
+                        if ("<70%" in condition and egg_prod < "70%") or \
+                           (">=70% <=85%" in condition and "70%" <= egg_prod <= "85%") or \
+                           (">85%" in condition and egg_prod > "85%"):
+                            st.markdown(f"- {adjustment}")
+                    elif "Health" in condition and health != "N/A":
+                        if condition.endswith(health):
+                            st.markdown(f"- {adjustment}")
+                    elif "Cost" in condition and cost != "N/A":
+                        if condition.endswith(cost):
+                            st.markdown(f"- {adjustment}")
         else:
             st.info("No recipe available for this chicken type.")
     except Exception as e:
