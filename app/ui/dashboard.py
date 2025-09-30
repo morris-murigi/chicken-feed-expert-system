@@ -64,15 +64,17 @@ with st.form("feed_form", clear_on_submit=False):
         )
         if egg_production == 0:
             egg_production = None
+        else:
+            egg_production = f"{egg_production}%"
         feed_cost = st.selectbox(
             "Feed Cost (optional)", 
             ["", "High", "Low"], 
-            help="Select feed cost preference, if any"
+            help="Select cost preference, if any"
         )
         health = st.selectbox(
             "Health (optional)", 
             ["", "Healthy", "Sick"], 
-            help="Select the health status of the chicken, if known"
+            help="Select health status, if known"
         )
     submitted = st.form_submit_button("Get Recommendation", use_container_width=True)
 
