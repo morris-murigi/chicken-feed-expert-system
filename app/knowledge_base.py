@@ -34,7 +34,10 @@ SEMANTICS = {
 # 2. FRAMES 
 CHICKEN_FRAMES = {
     "Chick": {
-        "Age_Stage": {"Starter_Phase_Weeks": "0-8"},
+        "Age_Stage": {
+            "young": (0, 0, 4),       # fuzzy set for very young chicks
+            "growing": (2, 4, 8)      # fuzzy set for older chicks
+        },
         "Primary_Goal": "Growth",
         "Recommended_Feed_Type": "Chick/Duck Mash",
         "Protein_Requirement_DCP_Range": {"Starter_DCP": "20-22%"},
@@ -42,7 +45,10 @@ CHICKEN_FRAMES = {
         "Total_Feed_Per_chick_kg": 2.0
     },
     "Pullets / Growers":{
-        "Age_Stage": {"Grower_Phase_Weeks": "8-20"},
+        "Age_Stage": {
+            "early": (6, 10, 14),
+            "peak": (12, 16, 20)
+        },
         "Primary_Goal" : "Growth",
         "Recommended_Feed_Type": "Grower Mash",
         "Protein_Requirement_DCP_Range": {"Grower_DCP": "16-18%"},
@@ -50,7 +56,10 @@ CHICKEN_FRAMES = {
         "Total_Feed_Per_bird_kg" : 8.5
     },
     "Layer": {
-        "Age_Stage": {"Layer_Phase_Weeks": "20-76"},
+        "Age_Stage": {
+            "prelay": (16, 18, 20),
+            "productive": (20, 40, 76)
+        },
         "Primary_Goal": "Egg Production",
         "Recommended_Feed_Type": "Layers' Mash",
         "Protein_Requirement_DCP_Range": {"Layer_DCP": "15-18%"},
@@ -59,7 +68,9 @@ CHICKEN_FRAMES = {
         "Total_Feed_Per_Stage_kg": 45
     },
     "Broiler_starter": {
-        "Age_Stage": {"Starter_Phase_Weeks": "0-1.5"},
+        "Age_Stage": {
+            "starter": (0, 0.75, 1.5)
+        },
         "Primary_Goal": "Meat Production",
         "Recommended_Feed_Type": "Broiler Starter",
         "Protein_Requirement_DCP_Range": {"Starter_DCP": "22-24%"},
@@ -67,7 +78,9 @@ CHICKEN_FRAMES = {
         "Total_Feed_Per_Stage_kg": 4.5
     },
     "Broiler_grower": {
-        "Age_Stage": {"Grower_Phase_Weeks": "1.5-4"},
+        "Age_Stage": {
+            "grower": (1.5, 2.5, 4)
+        },
         "Primary_Goal": "Meat Production",
         "Recommended_Feed_Type": "Broiler Starter",
         "Protein_Requirement_DCP_Range": {"Grower_DCP": "22-24%"},
@@ -75,7 +88,9 @@ CHICKEN_FRAMES = {
         "Total_Feed_Per_Stage_kg": 4.5
     },
     "Broiler_finisher": {
-        "Age_Stage": {"Finisher_Phase_Weeks": "4-7"},
+        "Age_Stage": {
+            "finisher": (4, 6, 7)
+        },
         "Primary_Goal": "Meat Production",
         "Recommended_Feed_Type": "Broiler Starter",
         "Protein_Requirement_DCP_Range": {"Finisher_DCP": "22-24%"},
@@ -184,7 +199,8 @@ RECIPE_FRAMES = {
 RULES = [
        {
         "name": "R_Chick_Feed",
-        "if": {"Type": "Chick","Age_Weeks": (0, 8)},
+       "if": {"Type": "Chick", "Age_Fuzzy": "young"},
+
         "then": {"Recommend": "Chick/Duck Mash", 
                  "DCP": "20-22%",
                  "Daily_Feed_g": 40,
@@ -193,7 +209,7 @@ RULES = [
     },
     {
         "name" : "R_Grower_Feed",
-        "if":{"Type": "Grower", "Age_Weeks": (8, 20)},
+       "if": {"Type": "Grower", "Age_Fuzzy": "peak"},
         "then":{"Recommend":"Growers Mash",
                 "DCP": "16-18%",
                 "Daily_Feed_g": 80,
@@ -202,7 +218,7 @@ RULES = [
     {
         "name" : "R_Layer_Feed",
         "priority": 1,
-        "if":{"Type": "Layer", "Age_Weeks": (20,76)},
+        "if": {"Type": "Layer", "Age_Fuzzy": "productive"},
         "then":{"Recommend":"Layers Mash",
                 "DCP": "15-18%",
                 "Daily_Feed_g": 125,
@@ -210,7 +226,7 @@ RULES = [
     },
     {
         "name" : "R_Broiler_Starter_Feed",
-        "if":{"Type": "Broiler Starter", "Age_Weeks": (0,1.5)},
+           "if": {"Type": "Broiler Starter", "Age_Fuzzy": "starter"},
         "then":{"Recommend":"Broiler Starter Mash",
                 "DCP": "22-24%",
                 "Daily_Feed_g": 80,
@@ -218,82 +234,65 @@ RULES = [
     },
     {
         "name" : "R_Broiler_Grower_Feed",
-        "if":{"Type": "Broiler Grower", "Age_Weeks": (1.5,4)},
+        "if": {"Type": "Broiler Grower", "Age_Fuzzy": "grower"},
         "then":{"Recommend":"Broiler Growers Mash",
                 "DCP": "20-21%",
                 "Daily_Feed_g": 80,
                 "Advice":"Feed broiler grower mash for growth.  "}
     },
     {   "name" : "R_Broiler_Finisher_Feed",
-        "if":{"Type": "Broiler Finisher", "Age_Weeks": (4,7)},
+        "if": {"Type": "Broiler Finisher", "Age_Fuzzy": "finisher"},
         "then":{"Recommend":"Broiler Finishers Mash",
                 "DCP": "18-19%",
                 "Daily_Feed_g": 80,
                 "Advice":"Feed broiler finisher mash for growth.  "}},
+]
 #some general rules 
+    # General rules (with fuzzy age where needed)
+RULES += [
     {
         "name": "R_Layer_Calcium_Warning",
-        "priority": 2, 
-        "if": {"Type": "Layer", "Age_Weeks": (0, 76)},
+        "priority": 2,
+        "if": {"Type": "Layer", "Age_Fuzzy": "productive"},
         "then": {"Warning": "High calcium damages kidneys"}
     },
     {
-        "name":"R_Water_Requirement",
-        "if":{"Any": True},
-        "then":{"Reminder":"Provide Clean, fresh water at all times. Wash drinkers regularly to avoid diseases"}
+        "name": "R_Water_Requirement",
+        "if": {"Any": True},
+        "then": {"Reminder": "Provide clean, fresh water at all times. Wash drinkers regularly to avoid diseases"}
     },
     {
         "name": "R_Feed_Hygiene",
-        "if":{"Any": True},
-        "then":{"Warning":"Avoid damp or moldy feed. Mycotoxins could cause poisoning"}
+        "if": {"Any": True},
+        "then": {"Warning": "Avoid damp or moldy feed. Mycotoxins could cause poisoning"}
     },
     {
         "name": "R_Layer_LowProduction",
-        "if": {"Type": "Layer", "Age_Weeks": (20, 76), "EggProduction": "<50%"},
-        "then": {"Recommend": "Grower Mash", 
+        "if": {"Type": "Layer", "Age_Fuzzy": "productive", "EggProduction": "<50%"},
+        "then": {
+            "Recommend": "Grower Mash",
             "DCP": "16-18%",
-            "Advice":"Reduce feed cost since egg production is low."}
+            "Advice": "Reduce feed cost since egg production is low."
+        }
     },
     {
         "name": "R_emergency_filler",
         "if": {"FeedCost": "High"},
-        "then": {"Recommend": "Alternative Feed Mix",
-            "Advice":"Use maize bran + fishmeal as cheaper substitute."}
-},
+        "then": {
+            "Recommend": "Alternative Feed Mix",
+            "Advice": "Use maize bran + fishmeal as cheaper substitute."
+        }
+    },
     {
         "name": "R_Broiler_Sick",
-        "if": {"Type": "Broiler Finisher", "Age_Weeks": (4, 6), "Health": "Sick"},
-        "then": {"Recommend": "Chick Mash", 
+        "if": {"Type": "Broiler Finisher", "Age_Fuzzy": "finisher", "Health": "Sick"},
+        "then": {
+            "Recommend": "Chick Mash",
             "DCP": "20-22%",
-            "Advice":"Use softer feed to help sick broilers recover."}
-}
-    ]
-
-
-#Fuzzy sets 
-# Fuzzy sets for age, protein, and cost
-FUZZY_SETS = {
-    "Age": {
-        "Chick": (0, 0, 8),        # triangular membership (low=0, peak=0, high=8)
-        "Grower": (7, 12, 20),
-        "Layer": (18, 30, 76)
-    },
-    "Protein": {
-        "Low": (10, 14, 18),
-        "High": (18, 22, 25)
-    },
-    "Cost": {
-        "Cheap": (15, 20, 25),
-        "Expensive": (30, 40, 50)
-    },
-    "Broiler_Age": {
-        "Starter": (0, 0, 1.5),     # 0–1.5 weeks
-        "Grower": (1.5, 3, 4),      # 1.5–4 weeks
-        "Finisher": (4, 6, 7)       # 4–7 weeks
-    },
-    "Broiler_Protein": {
-        "Low": (18, 20, 21),        # Below recommended
-        "Medium": (21, 22, 23),     # Around recommended
-        "High": (23, 24, 25)        # Above recommended
+            "Advice": "Use softer feed to help sick broilers recover."
+        }
     }
-}
+]
+
+
+

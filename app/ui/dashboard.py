@@ -1,68 +1,44 @@
 import streamlit as st
 import requests
-import sys, os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+st.title("🐔 Chicken Feed Expert System")
 
-from app.inference_engine import fuzzy_recommend_broiler  # import fuzzy function
+age = st.number_input("Enter Age (weeks):", min_value=0.0, step=0.5)
+reason = st.selectbox("Reason for rearing:", ["Eggs", "Meat"])
+budget = st.radio("Budget:", ["optimum", "low"])
+egg_prod = st.text_input("Egg Production % (optional):", "")
+health = st.selectbox("Health Status:", ["Healthy", "Sick", ""])
+feed_cost_tag = st.selectbox("Feed Cost Tag:", ["Normal", "High", ""])
 
-API_URL = "http://localhost:8000/recommend"  # Update when deploying
+if st.button("Get Recommendation"):
+    payload = {
+        "age_weeks": age,
+        "reason": reason,
+        "budget": budget,
+        "egg_production": egg_prod if egg_prod else None,
+        "health": health if health else None,
+        "feed_cost": feed_cost_tag if feed_cost_tag else None
+    }
+    res = requests.post("http://localhost:8000/recommend", json=payload)
 
-st.title("🐓 Chicken Feed Expert System")
-st.write("Get feed recommendations based on chicken type, age, and conditions.")
+    if res.status_code == 200:
+        data = res.json()
+        st.json(data)  # debug raw output
 
-# Mode selector
-mode = st.radio("Select Reasoning Mode:", ["Crisp (Rule-Based)", "Fuzzy Logic"])
+        st.subheader("Detected Chicken Type")
+        st.write(f"Frame: {data['detected_frame']}")
+        st.write(f"Age Label: {data['detected_age_label']} (degree={data['detected_degree']})")
 
-# User input form
-with st.form("feed_form"):
-    chicken_type = st.selectbox("Chicken Type", ["Chick", "Pullets / Growers", "Layer", 
-                                                 "Broiler Starter", "Broiler Grower", "Broiler Finisher"])
-    age_weeks = st.number_input("Age (weeks)", min_value=0.0, step=0.5)
-    egg_production = st.text_input("Egg Production (%) (optional)")
-    feed_cost = st.selectbox("Feed Cost (optional)", ["", "High", "Low"])
-    health = st.selectbox("Health (optional)", ["", "Healthy", "Sick"])
+        st.subheader("Recommendations")
+        for rec in data["recommendations"]:
+            st.write(f"- {rec.get('Recommend','')} | Advice: {rec.get('Advice','')}")
 
-    submitted = st.form_submit_button("Get Recommendation")
-
-if submitted:
-    if mode == "Crisp (Rule-Based)":
-        # Call API (existing behavior)
-        payload = {
-            "Type": chicken_type,
-            "Age_Weeks": age_weeks,
-            "EggProduction": egg_production if egg_production else None,
-            "FeedCost": feed_cost if feed_cost else None,
-            "Health": health if health else None
-        }
-        response = requests.post(API_URL, json=payload)
-
-        if response.status_code == 200:
-            data = response.json()
-            st.subheader("Recommendations")
-            for rec in data["recommendations"]:
-                st.json(rec)
-
-            if data["recipe"]:
-                st.subheader("Suggested Recipe")
-                st.write(data["recipe"]["Ingredients"])
-        else:
-            st.error("Error fetching recommendations.")
-
+        if data["recipe_name"]:
+            st.subheader(f"Feed Recipe: {data['recipe_name']}")
+            st.write("Ingredients Breakdown:")
+            for ing, details in data["cost_breakdown"]["ingredients"].items():
+                st.write(f"{ing}: {details['qty_kg']} kg x {details['price_per_kg']} = {details['cost']}")
+            st.write(f"**Total Cost:** {data['cost_breakdown']['total_cost']}")
+            st.write(f"**Cost per kg:** {data['cost_breakdown']['cost_per_kg']}")
     else:
-        # Fuzzy Mode – handled locally, no API call
-        st.subheader("🔮 Fuzzy Logic Recommendation")
-        
-        if "Broiler" in chicken_type:
-            result = fuzzy_recommend_broiler(age_weeks)
-            
-            st.write("**Age Membership:**", result["age_membership"])
-            st.write("**Protein Membership:**", result["protein_membership"])
-            st.write("**Suitability Scores:**")
-            for feed, score in result["options"]:
-                st.write(f"- {feed}: {score}")
-            
-            st.success(f"Recommended Feed → {result['recommended'][0]} (Score: {result['recommended'][1]})")
-        
-        else:
-            st.warning("Fuzzy logic currently implemented for Broilers only. Use Crisp mode for other chicken types.")
+        st.error("Error fetching recommendations from backend.")
