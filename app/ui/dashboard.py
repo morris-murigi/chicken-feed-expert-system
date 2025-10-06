@@ -43,7 +43,9 @@ with st.sidebar:
 st.title("🐓 Chicken Feed Expert System")
 st.markdown("**Get tailored feed recommendations to optimize your poultry's health and productivity.**")
 
-API_URL = "http://localhost:8000/recommend"
+# Add chatbot button
+if st.button("Chat with Our Expert Assistant"):
+    st.markdown("[Click here to chat](http://localhost:5000/chat)", unsafe_allow_html=True)
 
 with st.form("feed_form", clear_on_submit=False):
     st.markdown("### Input Poultry Details")
