@@ -11,12 +11,15 @@ def root():
 
 @app.post("/recommend")
 def recommend_feed_endpoint(query: FeedQuery):
+    """
+    Endpoint to recommend chicken feed based on user inputs.
+    """
     result = recommend_feed(
         age_weeks=query.age_weeks,
-        reason=query.reason,
-        budget=query.budget,
+        reason=query.type,
+        budget=query.budget,                # ✅ fixed: budget now mapped correctly
         egg_production=query.egg_production,
         health=query.health,
-        feed_cost_tag=query.feed_cost
+        feed_cost_tag=query.feed_cost       # ✅ distinct from budget
     )
     return result
