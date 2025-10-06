@@ -15,15 +15,8 @@ except ImportError as e:
     st.error(f"Import error for data_models: {str(e)}")
     st.stop()
 
-try:
-    from app.inference_engine import apply_rules, get_feed_recipe
-    st.write("Inference engine imported successfully.")
-except ImportError as e:
-    st.error(f"Import error for inference_engine: {str(e)}")
-    st.stop()
-
 # Streamlit UI
-st.set_page_config(page_title="Chicken Feed Expert System", page_icon="🐓", layout="wide")
+st.set_page_config(page_title="Chicken Feed Expert System", page_icon="🐔", layout="wide")
 
 with st.sidebar:
     st.image("https://via.placeholder.com/150?text=Logo", caption="Chicken Feed Expert System")
@@ -40,103 +33,63 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("© 2025 Chicken Feed Expert System")
 
-st.title("🐓 Chicken Feed Expert System")
-st.markdown("**Get tailored feed recommendations to optimize your poultry's health and productivity.**")
+st.title("🐔 Chicken Feed Expert System")
 
 # Add chatbot button
 if st.button("Chat with Our Expert Assistant"):
     st.markdown("[Click here to chat](http://localhost:5000/chat)", unsafe_allow_html=True)
 
-with st.form("feed_form", clear_on_submit=False):
-    st.markdown("### Input Poultry Details")
-    col1, col2 = st.columns(2)
-    with col1:
-        chicken_type = st.selectbox(
-            "Chicken Type", 
-            ["Chick", "Pullets / Growers", "Layer", "Broiler Starter", "Broiler Grower", "Broiler Finisher"],
-            help="Select the type of chicken based on age guide in sidebar"
-        )
-        age_weeks = st.number_input(
-            "Age (weeks)", 
-            min_value=0.0, 
-            step=0.5, 
-            format="%.1f", 
-            help="Enter the age of the chicken in weeks"
-        )
-    with col2:
-        egg_production = st.slider(
-            "Egg Production (%) (optional)", 
-            min_value=0, 
-            max_value=100, 
-            value=0, 
-            step=1, 
-            help="Approximate egg production percentage; slide to estimate"
-        )
-        if egg_production == 0:
-            egg_production = None
-        else:
-            egg_production = f"{egg_production}%"
-        feed_cost = st.selectbox(
-            "Feed Cost (optional)", 
-            ["", "High", "Low"], 
-            help="Select cost preference, if any"
-        )
-        health = st.selectbox(
-            "Health (optional)", 
-            ["", "Healthy", "Sick"], 
-            help="Select health status, if known"
-        )
-    submitted = st.form_submit_button("Get Recommendation", use_container_width=True)
+# Input fields
+age = st.number_input("Enter Age (weeks):", min_value=0.0, step=0.5)
+reason = st.selectbox("Reason for rearing:", ["Eggs", "Meat"])
+budget = st.radio("Budget:", ["optimum", "low"])
+egg_prod = st.slider("Egg Production % (optional):", min_value=0, max_value=100, value=0, step=1)
+if egg_prod == 0:
+    egg_prod = None
+else:
+    egg_prod = f"{egg_prod}%"
+health = st.selectbox("Health Status:", ["Healthy", "Sick", ""])
+feed_cost_tag = st.selectbox("Feed Cost Tag:", ["Normal", "High", ""])
 
-if submitted:
+# Submit button
+if st.button("Get Recommendation"):
     payload = {
-        "Type": chicken_type,
-        "Age_Weeks": age_weeks,
-        "EggProduction": egg_production,
-        "FeedCost": feed_cost if feed_cost else None,
-        "Health": health if health else None
+        "type": reason,                                # matches FeedQuery.type
+        "age_weeks": age,
+        "egg_production": egg_prod,
+        "feed_cost": feed_cost_tag if feed_cost_tag else None,
+        "health": health if health else None,
+        "budget": budget                               # ✅ now included
     }
+
     try:
-        with st.spinner("Fetching recommendations..."):
-            response = requests.post(API_URL, json=payload)
-            response.raise_for_status()
-        data = response.json()
-        st.success("Recommendation generated successfully!")
-        st.subheader("Input Facts")
-        st.json(data["facts"], expanded=False)
-        st.subheader("Recommendations")
-        if data["recommendations"]:
-            for rec in data["recommendations"]:
-                st.markdown(f"- {rec}")
+        res = requests.post("http://localhost:8000/recommend", json=payload)
+
+        if res.status_code == 200:
+            data = res.json()
+            st.json(data)  # debug raw output (you can remove later)
+
+            # Display results
+            st.subheader("Detected Chicken Type")
+            st.write(f"Frame: {data.get('detected_frame', 'N/A')}")
+            st.write(f"Age Label: {data.get('detected_age_label', 'N/A')} (degree={data.get('detected_degree', 'N/A')})")
+
+            st.subheader("Recommendations")
+            for rec in data.get("recommendations", []):
+                st.write(f"- {rec.get('Recommend','')} | Advice: {rec.get('Advice','')}")
+
+            # Optional recipe section
+            if data.get("recipe_name"):
+                st.subheader(f"Feed Recipe: {data['recipe_name']}")
+                st.write("Ingredients Breakdown:")
+                cost_breakdown = data.get("cost_breakdown", {})
+                ingredients = cost_breakdown.get("ingredients", {})
+                for ing, details in ingredients.items():
+                    st.write(f"{ing}: {details['qty_kg']} kg x {details['price_per_kg']} = {details['cost']}")
+                st.write(f"**Total Cost:** {cost_breakdown.get('total_cost', 'N/A')}")
+                st.write(f"**Cost per kg:** {cost_breakdown.get('cost_per_kg', 'N/A')}")
         else:
-            st.info("No recommendations matched.")
-        st.subheader("Suggested Recipe")
-        if data["recipe"]:
-            st.markdown(f"**Recipe Name:** {data['recipe'].get('name', 'N/A')}")
-            st.markdown(f"**Target DCP:** {data['recipe'].get('target_dcp', 'N/A')}")
-            if data["recipe"].get("ingredients"):
-                st.markdown("**Ingredients (kg per 70kg bag):**")
-                for ingredient, qty in data["recipe"]["ingredients"].items():
-                    st.markdown(f"- {ingredient}: {qty} kg")
-            if data["recipe"].get("adjustments"):
-                st.subheader("Adjustments Based on Input:")
-                facts = data["facts"]
-                egg_prod = facts.get("EggProduction", "N/A")
-                health = facts.get("Health", "N/A")
-                cost = facts.get("FeedCost", "N/A")
-                for condition, adjustment in data["recipe"]["adjustments"].items():
-                    if "Egg Production" in condition and egg_prod != "N/A":
-                        if ("<70%" in condition and egg_prod < "70%") or \
-                           (">=70% <=85%" in condition and "70%" <= egg_prod <= "85%") or \
-                           (">85%" in condition and egg_prod > "85%"):
-                            st.markdown(f"- {adjustment}")
-                    elif "Health" in condition and health != "N/A":
-                        if condition.endswith(health):
-                            st.markdown(f"- {adjustment}")
-                    elif "Cost" in condition and cost != "N/A":
-                        if condition.endswith(cost):
-                            st.markdown(f"- {adjustment}")
-        else:
-            st.info("No recipe available for this chicken type.")
-    except Exception as e:
-        st.error(f"Error fetching recommendations: {str(e)}")
+            st.error(f"Error fetching recommendations from backend. Status code: {res.status_code}")
+
+    except requests.exceptions.ConnectionError:
+        st.error("⚠️ Could not connect to backend. Make sure FastAPI is running at http://localhost:8000")
